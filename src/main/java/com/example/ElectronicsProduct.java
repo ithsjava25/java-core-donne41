@@ -1,0 +1,96 @@
+package com.example;
+
+import java.io.PrintStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class ElectronicsProduct extends Product implements Shippable {
+    private int warrantyMonths;
+    private BigDecimal price;
+    private BigDecimal weight;
+    static List<Shippable> shipList = new ArrayList<Shippable>();
+
+
+    public ElectronicsProduct(UUID id, String productName, Category category,
+                              BigDecimal price, int warrantyMonths,
+                              BigDecimal weight) {
+        this.setId(id);
+        this.setName(productName);
+        this.setCategory(category);
+        this.setPrice(price);
+        this.setWarrantyMonths(warrantyMonths);
+        this.weight(weight);
+
+    }
+
+
+    /*
+    Validation: negative warranty ->
+    IllegalArgumentException("Warranty months cannot be negative.").
+    Shipping rule: base 79, add 49 if weight > 5.0 kg.
+     */
+    public void setWarrantyMonths(int warrantyMonths) {
+        if(warrantyMonths < 0) {
+            throw new IllegalArgumentException("Warranty months cannot be negative.");
+        }
+        this.warrantyMonths = warrantyMonths;
+    }
+
+    public int warrantyMonths() {
+        return this.warrantyMonths;
+    }
+
+    //rule base 79, add 49 if above 5.0. obs total.
+    public void weight(BigDecimal weight) {
+        if(weight.doubleValue() < 0.0) {
+            throw new IllegalArgumentException("Weight cannot be negative.");
+        }
+        addToShippable();
+        this.weight = weight;
+    }
+    public void addToShippable() {
+        shipList.add(this);
+    }
+
+    public double weight() {
+        double weight = this.weight.doubleValue();
+        return weight;
+    }
+
+    @Override
+    public BigDecimal calculateShippingCost() {
+        BigDecimal weight = this.weight;
+        double weightDouble = weight.doubleValue();
+        double weightLimit = 5.0;
+        BigDecimal price = BigDecimal.valueOf(79);
+        if(weightDouble > weightLimit){
+            price = price.add(BigDecimal.valueOf(49));
+        }
+        return price.setScale(2, BigDecimal.ROUND_HALF_UP);
+    }
+
+    public String productDetails() {
+        String productName = this.name();
+        int warrantyMonths = this.warrantyMonths();
+        return String.format("""
+                Electronics: %s, Warranty: %s months""", productName, warrantyMonths);
+    }
+
+    @Override
+    public void setPrice(BigDecimal price) {
+        double tempPrice = price.doubleValue();
+        if (tempPrice >= 0.0) {
+            this.price = price;
+        } else {
+            throw new IllegalArgumentException("Price cannot be negative.");
+        }
+    }
+
+    public BigDecimal price() {
+        return price;
+    }
+
+
+}
