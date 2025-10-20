@@ -26,12 +26,27 @@ public class Warehouse {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null.");
         }
+        checkDuplicate(product);
         categoryMap.putIfAbsent(product.category(), new ArrayList<>());
         categoryMap.get(product.category()).add(product);
     }
 
+    /**
+     * Checks if a product already exists in the warehouse based on the UUID.
+     * Throws IlleagalArgumentException if duplicate is found.
+     * @param product to compare.
+     */
+    private void checkDuplicate(Product product) {
+        var list = getProductList();
+        for(var p : list){
+            if(p.uuid().equals(product.uuid())){
+                throw new IllegalArgumentException("Product with that id already exists, use updateProduct for updates.");
+            }
+        }
+    }
+
     public void remove(UUID id) {
-        List<Product> products = getProducts();
+        List<Product> products = getProductList();
         Category tempCat;
         for (Product product : products) {
             if (product.uuid().equals(id)) {
@@ -58,24 +73,47 @@ public class Warehouse {
         return categoryMap.get(singelCat);
     }
 
+    /**
+     * Get all product from the warehouse.
+     * @return an immutable list.
+     */
     public List<Product> getProducts() {
-        List<Product> productList = new ArrayList<>();
-        for (List<Product> list : categoryMap.values()) {
-            productList.addAll(list);
+        if(categoryMap.isEmpty()) {
+            return List.of();
         }
-        return productList;
+        var list = getProductList();
+        return List.copyOf(list);
     }
 
+    /**
+     * Get all product from the warehouse.
+     * @return a mutable list.
+     */
+    private List<Product>getProductList(){
+        List<Product> products = new ArrayList<>();
+        categoryMap.values()
+                .forEach(products::addAll);
+        return products;
+    }
+
+    /**
+     * Clears the warehouse of all products in all lists.
+     */
     public void clearProducts() {
-        Perishable.expiredList.clear();
+        FoodProduct.expiredList.clear();
         FoodProduct.shipList.clear();
         ElectronicsProduct.shipList.clear();
         changedList.clear();
         categoryMap.clear();
     }
 
+    /**
+     * Search the warehouse for a product by UUID
+     * @param id UUID
+     * @return Optional of product if found or an empty Optional.
+     */
     public Optional<Product> getProductById(UUID id) {
-        List<Product> products = getProducts();
+        List<Product> products = getProductList();
         Iterator<Product> iterator = products.iterator();
         if (!products.isEmpty()) {
             while (iterator.hasNext()) {
@@ -96,7 +134,7 @@ public class Warehouse {
         if (tempPrice < 0) {
             throw new IllegalArgumentException("price cant be negative.");
         }
-        List<Product> products = getProducts();
+        List<Product> products = getProductList();
         Product updateProduct = products.stream().filter(p -> p.uuid().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Product not found with id:" + id));
@@ -121,7 +159,7 @@ public class Warehouse {
     }
 
     public List<Perishable> expiredProducts() {
-        return Perishable.expiredList;
+        return FoodProduct.expiredList;
     }
 
     public List<Shippable> shippableProducts() {

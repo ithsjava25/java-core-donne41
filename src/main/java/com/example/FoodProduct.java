@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class FoodProduct extends Product
@@ -13,7 +14,7 @@ public class FoodProduct extends Product
     BigDecimal price;
     BigDecimal weight;
     static List<Shippable> shipList = new ArrayList<Shippable>();
-
+    static List<Perishable> expiredList = new ArrayList<>();
 
 
     public FoodProduct(UUID id, String productName, Category categoryName, BigDecimal price, LocalDate expirationDate, BigDecimal weight) {
@@ -42,9 +43,9 @@ public class FoodProduct extends Product
         this.weight = weight;
     }
     public double weight() {
-        double weight = this.weight.doubleValue();
-        return weight;
+        return this.weight.doubleValue();
     }
+
     public void addToShippable(){
         shipList.add(this);
     }
@@ -60,6 +61,32 @@ public class FoodProduct extends Product
     public void expirationDate(LocalDate date){
         this.expirationDate = date;
         isExpired();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FoodProduct that = (FoodProduct) o;
+        return expirationDate.equals(that.expirationDate) && Objects.equals(price, that.price) && Objects.equals(weight, that.weight);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = uuid().hashCode();
+        result = 31 * result + Objects.hashCode(price);
+        result = 31 * result + Objects.hashCode(weight);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "FoodProduct{" +
+                "expirationDate=" + expirationDate +
+                ", price=" + price +
+                ", weight=" + weight +
+                ", UUid=" + this.uuid() +
+                '}';
     }
 
     @Override

@@ -26,11 +26,6 @@ public class ElectronicsProduct extends Product implements Shippable {
     }
 
 
-    /*
-    Validation: negative warranty ->
-    IllegalArgumentException("Warranty months cannot be negative.").
-    Shipping rule: base 79, add 49 if weight > 5.0 kg.
-     */
     public void setWarrantyMonths(int warrantyMonths) {
         if(warrantyMonths < 0) {
             throw new IllegalArgumentException("Warranty months cannot be negative.");
@@ -42,7 +37,6 @@ public class ElectronicsProduct extends Product implements Shippable {
         return this.warrantyMonths;
     }
 
-    //rule base 79, add 49 if above 5.0. obs total.
     public void weight(BigDecimal weight) {
         if(weight.doubleValue() < 0.0) {
             throw new IllegalArgumentException("Weight cannot be negative.");

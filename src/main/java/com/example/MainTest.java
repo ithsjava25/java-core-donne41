@@ -24,17 +24,20 @@ public class MainTest {
 //                LocalDate.now().plusDays(5),
 //                new BigDecimal(2));
 //
-//        ElectronicsProduct laptop = new ElectronicsProduct(UUID.randomUUID(), "laptop",
-//                Category.of("electronics"),new BigDecimal (4000), 24,
-//                new BigDecimal (2));
+        ElectronicsProduct laptop = new ElectronicsProduct(UUID.randomUUID(), "laptop",
+                Category.of("electronics"),new BigDecimal (4000), 24,
+                new BigDecimal (2));
 
 
-        Milk2.productDetails();
         Warehouse warehouse = Warehouse.getInstance("New Warehouse");
         warehouse.addProduct(Milk1);
-        warehouse.remove(Milk1.uuid());
-        System.out.println(warehouse.isEmpty());
         warehouse.addProduct(Milk2);
+        warehouse.addProduct(laptop);
+        List<Product> test = warehouse.getProducts();
+        System.out.println(test.size());
+        warehouse.remove(Milk1.uuid());
+        System.out.println(Milk2);
+        System.out.println(warehouse.isEmpty());
         warehouse.shippableProducts().stream()
                 .map(Shippable::calculateShippingCost)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
