@@ -136,33 +136,64 @@ class WarehouseAnalyzer {
         }
         return result;
     }
-    
-    /**
-     * Identifies products whose price deviates from the mean by more than the specified
-     * number of standard deviations. Uses population standard deviation over all products.
-     * Test expectation: with a mostly tight cluster and two extremes, calling with 2.0 returns the two extremes.
-     *
-     * @param standardDeviations threshold in standard deviations (e.g., 2.0)
-     * @return list of products considered outliers
-     */
-    public List<Product> findPriceOutliers(double standardDeviations) {
-        List<Product> products = warehouse.getProducts();
-        int n = products.size();
-        if (n == 0) return List.of();
-        double sum = products.stream().map(Product::price).mapToDouble(bd -> bd.doubleValue()).sum();
-        double mean = sum / n;
-        double variance = products.stream()
-                .map(Product::price)
-                .mapToDouble(bd -> Math.pow(bd.doubleValue() - mean, 2))
-                .sum() / n;
-        double std = Math.sqrt(variance);
-        double threshold = standardDeviations * std;
-        List<Product> outliers = new ArrayList<>();
-        for (Product p : products) {
-            double diff = Math.abs(p.price().doubleValue() - mean);
-            if (diff > threshold) outliers.add(p);
+        //TODO Fix comments about what it does.
+        //  And fix comments and shit in EdgeCaseTest!
+//    /**
+//     * Identifies products whose price deviates from the mean by more than the specified
+//     * number of standard deviations. Uses population standard deviation over all products.
+//     * Test expectation: with a mostly tight cluster and two extremes, calling with 2.0 returns the two extremes.
+//     *
+//     * @param standardDeviations threshold in standard deviations (e.g., 2.0)
+//     * @return list of products considered outliers
+//     */
+//    public List<Product> findPriceOutliers(double standardDeviations) {
+//        List<Product> products = warehouse.getProducts();
+//        int n = products.size();
+//        if (n == 0) return List.of();
+//        double sum = products.stream().map(Product::price).mapToDouble(bd -> bd.doubleValue()).sum();
+//        double mean = sum / n;
+//        double variance = products.stream()
+//                .map(Product::price)
+//                .mapToDouble(bd -> Math.pow(bd.doubleValue() - mean, 2))
+//                .sum() / n;
+//        double std = Math.sqrt(variance);
+//        double threshold = standardDeviations * std;
+//        List<Product> outliers = new ArrayList<>();
+//        for (Product p : products) {
+//            double diff = Math.abs(p.price().doubleValue() - mean);
+//            if (diff > threshold) outliers.add(p);
+//        }
+//        return outliers;
+//    }
+    public List<Product>findPriceOutliers(){
+        var productList = warehouse.getProductList();
+        List<Product> outliners = new ArrayList<>();
+        int medianIndex = (int)(productList.size() / 2.0 + 0.5);
+        int lowerQIndex = (int)(medianIndex / 2.0 + 0.5);
+        int upperQIndex = medianIndex+lowerQIndex;
+        var sortedList = productList.stream().sorted(Comparator.comparing(Product::price)).toList();
+        var medianProduct = sortedList.get(medianIndex);
+        var lowerProduct = sortedList.get(lowerQIndex);
+        var upperProduct = sortedList.get(upperQIndex);
+        BigDecimal oneAndHalf = new BigDecimal("1.5");
+        BigDecimal medianPrice = medianProduct.price();
+        BigDecimal lowerPrice =  lowerProduct.price();
+        BigDecimal upperPrice = upperProduct.price();
+        BigDecimal IQR = upperPrice.subtract(lowerPrice);
+        BigDecimal lowIQR = lowerPrice.subtract(oneAndHalf.multiply(IQR));
+        BigDecimal HighIQR = upperPrice.add(oneAndHalf.multiply(IQR));
+        double lowIQRdouble =  lowIQR.doubleValue();
+        double HighIQRdouble = HighIQR.doubleValue();
+
+        for(var product : sortedList){
+            BigDecimal tempDecimalPrice = product.price();
+            double tempPrice = tempDecimalPrice.doubleValue();
+            if(tempPrice < lowIQRdouble ||  tempPrice > HighIQRdouble){
+                outliners.add(product);
+            }
         }
-        return outliers;
+        return outliners;
+
     }
     
     /**

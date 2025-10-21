@@ -208,7 +208,8 @@ class EdgeCaseTest {
             warehouse.addProduct(outlierLow);
 
             // Act - Find outliers (products with price > 2 standard deviations from mean)
-            List<Product> outliers = analyzer.findPriceOutliers(2.0); // 2 standard deviations
+            //List<Product> outliers = analyzer.findPriceOutliers(2.0); // 2 standard deviations
+            List<Product> outliers = analyzer.findPriceOutliers(); // 2 standard deviations
 
             // Assert
             assertThat(outliers)

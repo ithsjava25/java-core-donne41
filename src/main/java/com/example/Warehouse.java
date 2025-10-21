@@ -18,6 +18,7 @@ public class Warehouse {
         }
         return singleInstance;
     }
+
     public static Warehouse getInstance() {
         return singleInstance;
     }
@@ -34,15 +35,42 @@ public class Warehouse {
     /**
      * Checks if a product already exists in the warehouse based on the UUID.
      * Throws IlleagalArgumentException if duplicate is found.
+     *
      * @param product to compare.
      */
     private void checkDuplicate(Product product) {
         var list = getProductList();
-        for(var p : list){
-            if(p.uuid().equals(product.uuid())){
+        for (var p : list) {
+            if (p.uuid().equals(product.uuid())) {
                 throw new IllegalArgumentException("Product with that id already exists, use updateProduct for updates.");
             }
         }
+    }
+
+
+    public List<Product> findOutliners() {
+        var productList = getProductList();
+        List<Product> outliners = new ArrayList<>();
+        int medianIndex = (int) (productList.size() / 2.0 + 0.5);
+        int lowerQIndex = (int) (medianIndex / 2.0 + 0.5);
+        int upperQIndex = medianIndex + lowerQIndex;
+        var sortedList = productList.stream().sorted(Comparator.comparing(Product::price)).toList();
+        BigDecimal lowerPrice = sortedList.get(lowerQIndex).price();
+        BigDecimal upperPrice = sortedList.get(upperQIndex).price();
+        BigDecimal oneAndHalf = new BigDecimal("1.5");
+        BigDecimal IQR = upperPrice.subtract(lowerPrice);
+        BigDecimal lowIQR = lowerPrice.subtract(oneAndHalf.multiply(IQR));
+        BigDecimal HighIQR = upperPrice.add(oneAndHalf.multiply(IQR));
+
+        for (var product : sortedList) {
+            BigDecimal tempDecimalPrice = product.price();
+            double tempPrice = tempDecimalPrice.doubleValue();
+            if (tempPrice < lowIQR.doubleValue() || tempPrice > HighIQR.doubleValue()) {
+                outliners.add(product);
+            }
+        }
+        return outliners;
+
     }
 
     public void remove(UUID id) {
@@ -59,22 +87,22 @@ public class Warehouse {
             if (categoryList.size() == 1) {
                 categoryMap.remove(tempCat);
             }
-            Iterator<Product> iterator = categoryList.iterator();
-            while (iterator.hasNext()) {
-                if (iterator.next().uuid().equals(id)) {
-                    iterator.remove();
-                }
-            }
+            categoryList.stream().filter(p->p.uuid()
+                    .equals(id))
+                    .findFirst()
+                    .ifPresent(categoryList::remove);
+
             categoryMap.replace(tempCat, categoryList);
         }
     }
 
     /**
      * Get all product from the warehouse.
+     *
      * @return an immutable list.
      */
     public List<Product> getProducts() {
-        if(categoryMap.isEmpty()) {
+        if (categoryMap.isEmpty()) {
             return List.of();
         }
         var list = getProductList();
@@ -83,9 +111,10 @@ public class Warehouse {
 
     /**
      * Get all product from the warehouse.
+     *
      * @return a mutable list.
      */
-    private List<Product>getProductList(){
+    public List<Product> getProductList() {
         List<Product> products = new ArrayList<>();
         categoryMap.values()
                 .forEach(products::addAll);
@@ -102,6 +131,7 @@ public class Warehouse {
 
     /**
      * Search the warehouse for a product by UUID
+     *
      * @param id UUID
      * @return Optional of product if found or an empty Optional.
      */
@@ -155,9 +185,9 @@ public class Warehouse {
         List<Perishable> perishables = new ArrayList<>();
         var list = getProductList();
         for (Product product : list) {
-            if(product instanceof Perishable){
-                if(((Perishable) product).isExpired())
-                perishables.add((Perishable) product);
+            if (product instanceof Perishable) {
+                if (((Perishable) product).isExpired())
+                    perishables.add((Perishable) product);
             }
         }
         return perishables;
@@ -168,7 +198,7 @@ public class Warehouse {
         var prods = getProductList();
         for (Product product : prods) {
             shipList.add((Shippable) product);
-            }
+        }
         return shipList;
     }
 }
