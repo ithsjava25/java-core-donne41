@@ -8,9 +8,7 @@ public interface Perishable {
 
 
     LocalDate expirationDate();
-    default void isExpired(){
-        if(this.expirationDate().isBefore(LocalDate.now())){
-            FoodProduct.expiredList.add(this);
-        }
+    default boolean isExpired(){
+        return this.expirationDate().isBefore(LocalDate.now());
 }
 }

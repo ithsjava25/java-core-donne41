@@ -13,8 +13,7 @@ public class FoodProduct extends Product
     LocalDate expirationDate;
     BigDecimal price;
     BigDecimal weight;
-    static List<Shippable> shipList = new ArrayList<Shippable>();
-    static List<Perishable> expiredList = new ArrayList<>();
+
 
 
     public FoodProduct(UUID id, String productName, Category categoryName, BigDecimal price, LocalDate expirationDate, BigDecimal weight) {
@@ -39,16 +38,12 @@ public class FoodProduct extends Product
         if(weight.doubleValue() < 0.0) {
             throw new IllegalArgumentException("Weight cannot be negative.");
         }
-        addToShippable();
         this.weight = weight;
     }
     public double weight() {
         return this.weight.doubleValue();
     }
 
-    public void addToShippable(){
-        shipList.add(this);
-    }
 
 
     public BigDecimal price() {
@@ -60,32 +55,17 @@ public class FoodProduct extends Product
     }
     public void expirationDate(LocalDate date){
         this.expirationDate = date;
-        isExpired();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-
-        FoodProduct that = (FoodProduct) o;
-        return expirationDate.equals(that.expirationDate) && Objects.equals(price, that.price) && Objects.equals(weight, that.weight);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = uuid().hashCode();
-        result = 31 * result + Objects.hashCode(price);
-        result = 31 * result + Objects.hashCode(weight);
-        return result;
-    }
 
     @Override
     public String toString() {
-        return "FoodProduct{" +
-                "expirationDate=" + expirationDate +
-                ", price=" + price +
-                ", weight=" + weight +
-                ", UUid=" + this.uuid() +
+        return "FoodProduct {" +
+                " name= "+ this.name() +
+                " expirationDate= " + expirationDate +
+                ", price= " + price +
+                ", weight= " + weight +
+                ", UUid= " + this.uuid() +
                 '}';
     }
 

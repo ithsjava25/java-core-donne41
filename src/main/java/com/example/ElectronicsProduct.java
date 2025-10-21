@@ -4,13 +4,14 @@ import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class ElectronicsProduct extends Product implements Shippable {
     private int warrantyMonths;
     private BigDecimal price;
     private BigDecimal weight;
-    static List<Shippable> shipList = new ArrayList<Shippable>();
+
 
 
     public ElectronicsProduct(UUID id, String productName, Category category,
@@ -41,11 +42,7 @@ public class ElectronicsProduct extends Product implements Shippable {
         if(weight.doubleValue() < 0.0) {
             throw new IllegalArgumentException("Weight cannot be negative.");
         }
-        addToShippable();
         this.weight = weight;
-    }
-    public void addToShippable() {
-        shipList.add(this);
     }
 
     public double weight() {
@@ -87,4 +84,14 @@ public class ElectronicsProduct extends Product implements Shippable {
     }
 
 
+    @Override
+    public String toString() {
+        return "ElectronicsProduct {" +
+                " Name= " + this.name()+
+                " warrantyMonths=" + warrantyMonths +
+                ", price=" + price +
+                ", weight=" + weight +
+                ", UUid= " + this.uuid()+
+                '}';
+    }
 }

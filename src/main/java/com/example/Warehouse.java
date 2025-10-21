@@ -5,7 +5,7 @@ import java.util.*;
 
 public class Warehouse {
     private static Warehouse singleInstance = null;
-    private final List<Product> changedList = new ArrayList<>();
+    private final Set<Product> changedSet = new HashSet<>();
     private final Map<Category, List<Product>> categoryMap = new HashMap<>();
 
 
@@ -55,22 +55,18 @@ public class Warehouse {
                 System.out.println("product not found with UUID: " + id);
                 return;
             }
-            List<Product> catList = getProductsByCategory(tempCat);
-            if (catList.size() == 1) {
+            List<Product> categoryList = categoryMap.get(tempCat);
+            if (categoryList.size() == 1) {
                 categoryMap.remove(tempCat);
             }
-            Iterator<Product> iterator = catList.iterator();
+            Iterator<Product> iterator = categoryList.iterator();
             while (iterator.hasNext()) {
                 if (iterator.next().uuid().equals(id)) {
                     iterator.remove();
                 }
             }
-            categoryMap.replace(tempCat, catList);
+            categoryMap.replace(tempCat, categoryList);
         }
-    }
-
-    private List<Product> getProductsByCategory(Category singelCat) {
-        return categoryMap.get(singelCat);
     }
 
     /**
@@ -100,10 +96,7 @@ public class Warehouse {
      * Clears the warehouse of all products in all lists.
      */
     public void clearProducts() {
-        FoodProduct.expiredList.clear();
-        FoodProduct.shipList.clear();
-        ElectronicsProduct.shipList.clear();
-        changedList.clear();
+        changedSet.clear();
         categoryMap.clear();
     }
 
@@ -139,7 +132,7 @@ public class Warehouse {
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Product not found with id:" + id));
         updateProduct.setPrice(price);
-        changedList.add(updateProduct);
+        changedSet.add(updateProduct);
 
     }
 
@@ -147,8 +140,8 @@ public class Warehouse {
         return categoryMap;
     }
 
-    public List<Product> getChangedProducts() {
-        return changedList;
+    public Set<Product> getChangedProducts() {
+        return changedSet;
     }
 
     public boolean isEmpty() {
@@ -159,13 +152,23 @@ public class Warehouse {
     }
 
     public List<Perishable> expiredProducts() {
-        return FoodProduct.expiredList;
+        List<Perishable> perishables = new ArrayList<>();
+        var list = getProductList();
+        for (Product product : list) {
+            if(product instanceof Perishable){
+                if(((Perishable) product).isExpired())
+                perishables.add((Perishable) product);
+            }
+        }
+        return perishables;
     }
 
     public List<Shippable> shippableProducts() {
-        List<Shippable> ships = new ArrayList<Shippable>();
-        ships.addAll(FoodProduct.shipList);
-        ships.addAll(ElectronicsProduct.shipList);
-        return ships;
+        List<Shippable> shipList = new ArrayList<>();
+        var prods = getProductList();
+        for (Product product : prods) {
+            shipList.add((Shippable) product);
+            }
+        return shipList;
     }
 }

@@ -42,4 +42,17 @@ public abstract class Product {
     public abstract void setPrice(BigDecimal price);
 
     public abstract String productDetails();
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Product product = (Product) o;
+        return id.equals(product.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }
