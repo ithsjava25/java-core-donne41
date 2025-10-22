@@ -1,0 +1,57 @@
+package com.example;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+public abstract class Product {
+    private UUID id;
+    private String name;
+    private Category category;
+
+
+    public UUID uuid() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String name() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+    public void setCategory(Category categoryName) {
+        this.category = categoryName;
+    }
+
+    public Category category() {
+        return this.category;
+    }
+
+    public abstract double weight();
+
+    public abstract BigDecimal price();
+
+    public abstract void setPrice(BigDecimal price);
+
+    public abstract String productDetails();
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Product product = (Product) o;
+        return id.equals(product.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+}
