@@ -60,9 +60,7 @@ public class MainTest {
         System.out.println("All products price");
         List<Product> list = warehouse.getProducts();
         System.out.println(list.size());
-        var outList = warehouse.findOutliners();
-        System.out.println(outList.size());
-        System.out.println(outList);
+
 
     }
 

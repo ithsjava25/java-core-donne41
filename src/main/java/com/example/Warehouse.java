@@ -2,9 +2,10 @@ package com.example;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Warehouse {
-    private static Map<String, Warehouse> singleInstancePerName = new HashMap<>();
+    private static final Map<String, Warehouse> singleInstancePerName = new ConcurrentHashMap<>();
     private final Set<Product> changedSet = new HashSet<>();
     private final Map<Category, List<Product>> categoryMap = new HashMap<>();
 
@@ -12,16 +13,16 @@ public class Warehouse {
     private Warehouse(String name) {
     }
 
-    public static Warehouse getInstance(String name) {
+    public synchronized static Warehouse getInstance(String name) {
         return singleInstancePerName.computeIfAbsent(name, Warehouse::new);
     }
 
 
-    public static Warehouse getInstance() {
+    public synchronized static Warehouse getInstance() {
         return singleInstancePerName.computeIfAbsent("Default", Warehouse::new);
     }
 
-    public void addProduct(Product product) {
+    public synchronized void addProduct(Product product) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null.");
         }
@@ -32,8 +33,9 @@ public class Warehouse {
 
     /**
      * Checks if a product in the warehouse has the same ID as the product.
-     * Throws IlleagalArgumentException if ID is found.
+     * Throws IllegalArgumentException if ID is found.
      * Void if product ID isn't in the warehouse.
+     *
      * @param product about to be added in the warehouse.
      */
     private void checkForAlreadyExistentId(Product product) {
@@ -45,36 +47,14 @@ public class Warehouse {
     }
 
 
-    public List<Product> findOutliners() {
-        var productList = getProducts();
-        List<Product> outliners = new ArrayList<>();
-        int medianIndex = (int) ((productList.size()-1) / 2.0 + 0.5);
-        int lowerQIndex = (int) ((productList.size()-1) / 4.0 + 0.5);
-        int upperQIndex = medianIndex + lowerQIndex;
-        var sortedList = productList.stream().sorted(Comparator.comparing(Product::price)).toList();
-        BigDecimal lowerPrice = sortedList.get(lowerQIndex).price();
-        BigDecimal upperPrice = sortedList.get(upperQIndex).price();
-        BigDecimal oneAndHalf = new BigDecimal("1.5");
-        BigDecimal IQR = upperPrice.subtract(lowerPrice);
-        BigDecimal lowIQR = lowerPrice.subtract(oneAndHalf.multiply(IQR));
-        BigDecimal HighIQR = upperPrice.add(oneAndHalf.multiply(IQR));
-
-        for (var product : sortedList) {
-            BigDecimal tempDecimalPrice = product.price();
-            double tempPrice = tempDecimalPrice.doubleValue();
-            if (tempPrice < lowIQR.doubleValue() || tempPrice > HighIQR.doubleValue()) {
-                outliners.add(product);
-            }
-        }
-        return outliners;
-
-    }
-
     /**
      * Removes a product if it exists in the warehouse.
+     * if there are only the product to be removed in one category
+     * the category will be removed.
+     *
      * @param id for the product to be removed
      */
-    public void remove(UUID id) {
+    public synchronized void remove(UUID id) {
         Category tempCat = null;
         boolean found = false;
         for (Product product : getProducts()) {
@@ -94,7 +74,7 @@ public class Warehouse {
                     .ifPresent(categoryList::remove);
 
             categoryMap.replace(tempCat, categoryList);
-        }else System.out.println("product not found with UUID: " + id);
+        } else System.out.println("product not found with UUID: " + id);
     }
 
     /**
@@ -116,7 +96,7 @@ public class Warehouse {
     /**
      * Clears the warehouse of all products in all lists.
      */
-    public void clearProducts() {
+    public synchronized void clearProducts() {
         changedSet.clear();
         categoryMap.clear();
     }
@@ -141,7 +121,14 @@ public class Warehouse {
         return Optional.empty();
     }
 
-    public void updateProductPrice(UUID id, BigDecimal price) {
+    /**
+     * Updates a products price already added to the warehouse.
+     * Takes UUID as key and BigDecimal for new price.
+     * Also adds product to changed product list.
+     * @param id Product to update
+     * @param price New price for the product
+     */
+    public synchronized void updateProductPrice(UUID id, BigDecimal price) {
         if (id == null) {
             throw new IllegalArgumentException("id cant be null.");
         }
