@@ -51,6 +51,7 @@ public class MainTest {
         warehouse.addProduct(Milk3);
         warehouse.updateProductPrice(laptop.uuid(),new BigDecimal (9500));
         warehouse.updateProductPrice(laptop.uuid(),new BigDecimal (8000));
+        System.out.println("changed: " + warehouse.getChangedProducts().size());
         System.out.println(warehouse.isEmpty());
         System.out.println(warehouse.shippableProducts().stream()
                 .map(Shippable::calculateShippingCost)

@@ -3,9 +3,6 @@ package com.example;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 public class FoodProduct extends Product
@@ -27,8 +24,7 @@ public class FoodProduct extends Product
 
     @Override
     public void setPrice(BigDecimal price) {
-        double tempPrice = price.doubleValue();
-        if (tempPrice >= 0.0) {
+        if (price.doubleValue() >= 0.0) {
             this.price = price;
         } else {
             throw new IllegalArgumentException("Price cannot be negative.");
@@ -81,8 +77,7 @@ public class FoodProduct extends Product
 
     @Override
     public BigDecimal calculateShippingCost() {
-        BigDecimal weight = this.weight;
-        BigDecimal shippingCost = weight.multiply(new BigDecimal(50));
+        BigDecimal shippingCost = this.weight.multiply(new BigDecimal(50));
         return shippingCost.setScale(2, RoundingMode.HALF_UP);
     }
 }

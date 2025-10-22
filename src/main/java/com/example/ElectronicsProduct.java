@@ -1,10 +1,6 @@
 package com.example;
 
-import java.io.PrintStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 public class ElectronicsProduct extends Product implements Shippable {
@@ -46,17 +42,13 @@ public class ElectronicsProduct extends Product implements Shippable {
     }
 
     public double weight() {
-        double weight = this.weight.doubleValue();
-        return weight;
+        return this.weight.doubleValue();
     }
 
     @Override
     public BigDecimal calculateShippingCost() {
-        BigDecimal weight = this.weight;
-        double weightDouble = weight.doubleValue();
-        double weightLimit = 5.0;
         BigDecimal price = BigDecimal.valueOf(79);
-        if(weightDouble > weightLimit){
+        if(this.weight.doubleValue() > 5.0){
             price = price.add(BigDecimal.valueOf(49));
         }
         return price.setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -71,8 +63,7 @@ public class ElectronicsProduct extends Product implements Shippable {
 
     @Override
     public void setPrice(BigDecimal price) {
-        double tempPrice = price.doubleValue();
-        if (tempPrice >= 0.0) {
+        if (price.doubleValue() >= 0.0) {
             this.price = price;
         } else {
             throw new IllegalArgumentException("Price cannot be negative.");

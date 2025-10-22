@@ -1,7 +1,6 @@
 package com.example;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
@@ -165,30 +164,31 @@ class WarehouseAnalyzer {
 //        }
 //        return outliers;
 //    }
+
+    /**
+     * Identifies outliners by implementing the IQR method.
+     * Note that this method needs 7-10 products to actually work by getting
+     * the low median, median and high median.
+     * @return List of products that is considered outliners
+     */
     public List<Product>findPriceOutliers(){
         var productList = warehouse.getProductList();
         List<Product> outliners = new ArrayList<>();
-        int medianIndex = (int)(productList.size() / 2.0 + 0.5);
-        int lowerQIndex = (int)(medianIndex / 2.0 + 0.5);
-        int upperQIndex = medianIndex+lowerQIndex;
+        int medianIndex = (int) (productList.size() / 2.0 + 0.5);
+        int lowerQIndex = (int) (medianIndex / 2.0 + 0.5);
+        int upperQIndex = medianIndex + lowerQIndex;
         var sortedList = productList.stream().sorted(Comparator.comparing(Product::price)).toList();
-        var medianProduct = sortedList.get(medianIndex);
-        var lowerProduct = sortedList.get(lowerQIndex);
-        var upperProduct = sortedList.get(upperQIndex);
+        BigDecimal lowerPrice = sortedList.get(lowerQIndex).price();
+        BigDecimal upperPrice = sortedList.get(upperQIndex).price();
         BigDecimal oneAndHalf = new BigDecimal("1.5");
-        BigDecimal medianPrice = medianProduct.price();
-        BigDecimal lowerPrice =  lowerProduct.price();
-        BigDecimal upperPrice = upperProduct.price();
         BigDecimal IQR = upperPrice.subtract(lowerPrice);
         BigDecimal lowIQR = lowerPrice.subtract(oneAndHalf.multiply(IQR));
         BigDecimal HighIQR = upperPrice.add(oneAndHalf.multiply(IQR));
-        double lowIQRdouble =  lowIQR.doubleValue();
-        double HighIQRdouble = HighIQR.doubleValue();
 
-        for(var product : sortedList){
+        for (var product : sortedList) {
             BigDecimal tempDecimalPrice = product.price();
             double tempPrice = tempDecimalPrice.doubleValue();
-            if(tempPrice < lowIQRdouble ||  tempPrice > HighIQRdouble){
+            if (tempPrice < lowIQR.doubleValue() || tempPrice > HighIQR.doubleValue()) {
                 outliners.add(product);
             }
         }

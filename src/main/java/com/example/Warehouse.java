@@ -19,6 +19,7 @@ public class Warehouse {
         return singleInstance;
     }
 
+
     public static Warehouse getInstance() {
         return singleInstance;
     }
@@ -39,8 +40,7 @@ public class Warehouse {
      * @param product to compare.
      */
     private void checkDuplicate(Product product) {
-        var list = getProductList();
-        for (var p : list) {
+        for (var p : getProductList()) {
             if (p.uuid().equals(product.uuid())) {
                 throw new IllegalArgumentException("Product with that id already exists, use updateProduct for updates.");
             }
@@ -73,6 +73,10 @@ public class Warehouse {
 
     }
 
+    /**
+     * Removes a product if it exists in the warehouse.
+     * @param id for the product to be removed
+     */
     public void remove(UUID id) {
         List<Product> products = getProductList();
         Category tempCat;
@@ -87,8 +91,8 @@ public class Warehouse {
             if (categoryList.size() == 1) {
                 categoryMap.remove(tempCat);
             }
-            categoryList.stream().filter(p->p.uuid()
-                    .equals(id))
+            categoryList.stream().filter(p -> p.uuid()
+                            .equals(id))
                     .findFirst()
                     .ifPresent(categoryList::remove);
 
@@ -157,8 +161,9 @@ public class Warehouse {
         if (tempPrice < 0) {
             throw new IllegalArgumentException("price cant be negative.");
         }
-        List<Product> products = getProductList();
-        Product updateProduct = products.stream().filter(p -> p.uuid().equals(id))
+        Product updateProduct = getProductList().stream()
+                .filter(p -> p.uuid()
+                        .equals(id))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Product not found with id:" + id));
         updateProduct.setPrice(price);
@@ -175,19 +180,15 @@ public class Warehouse {
     }
 
     public boolean isEmpty() {
-        if (categoryMap.isEmpty()) {
-            return true;
-        }
+        if (categoryMap.isEmpty()) return true;
         return false;
     }
 
     public List<Perishable> expiredProducts() {
         List<Perishable> perishables = new ArrayList<>();
-        var list = getProductList();
-        for (Product product : list) {
-            if (product instanceof Perishable) {
-                if (((Perishable) product).isExpired())
-                    perishables.add((Perishable) product);
+        for (Product product : getProductList()) {
+            if (product instanceof Perishable && ((Perishable) product).isExpired()) {
+                perishables.add((Perishable) product);
             }
         }
         return perishables;
@@ -195,8 +196,7 @@ public class Warehouse {
 
     public List<Shippable> shippableProducts() {
         List<Shippable> shipList = new ArrayList<>();
-        var prods = getProductList();
-        for (Product product : prods) {
+        for (Product product : getProductList()) {
             shipList.add((Shippable) product);
         }
         return shipList;
