@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class Warehouse {
-    private static Warehouse singleInstance = null;
+    private static Map<String, Warehouse> singleInstancePerName = new HashMap<>();
     private final Set<Product> changedSet = new HashSet<>();
     private final Map<Category, List<Product>> categoryMap = new HashMap<>();
 
@@ -13,34 +13,31 @@ public class Warehouse {
     }
 
     public static Warehouse getInstance(String name) {
-        if (singleInstance == null) {
-            singleInstance = new Warehouse(name);
-        }
-        return singleInstance;
+        return singleInstancePerName.computeIfAbsent(name, Warehouse::new);
     }
 
 
     public static Warehouse getInstance() {
-        return singleInstance;
+        return singleInstancePerName.computeIfAbsent("Default", Warehouse::new);
     }
 
     public void addProduct(Product product) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null.");
         }
-        checkDuplicate(product);
+        checkForAlreadyExistentId(product);
         categoryMap.putIfAbsent(product.category(), new ArrayList<>());
         categoryMap.get(product.category()).add(product);
     }
 
     /**
-     * Checks if a product already exists in the warehouse based on the UUID.
-     * Throws IlleagalArgumentException if duplicate is found.
-     *
-     * @param product to compare.
+     * Checks if a product in the warehouse has the same ID as the product.
+     * Throws IlleagalArgumentException if ID is found.
+     * Void if product ID isn't in the warehouse.
+     * @param product about to be added in the warehouse.
      */
-    private void checkDuplicate(Product product) {
-        for (var p : getProductList()) {
+    private void checkForAlreadyExistentId(Product product) {
+        for (var p : getProducts()) {
             if (p.uuid().equals(product.uuid())) {
                 throw new IllegalArgumentException("Product with that id already exists, use updateProduct for updates.");
             }
@@ -49,10 +46,10 @@ public class Warehouse {
 
 
     public List<Product> findOutliners() {
-        var productList = getProductList();
+        var productList = getProducts();
         List<Product> outliners = new ArrayList<>();
-        int medianIndex = (int) (productList.size() / 2.0 + 0.5);
-        int lowerQIndex = (int) (medianIndex / 2.0 + 0.5);
+        int medianIndex = (int) ((productList.size()-1) / 2.0 + 0.5);
+        int lowerQIndex = (int) ((productList.size()-1) / 4.0 + 0.5);
         int upperQIndex = medianIndex + lowerQIndex;
         var sortedList = productList.stream().sorted(Comparator.comparing(Product::price)).toList();
         BigDecimal lowerPrice = sortedList.get(lowerQIndex).price();
@@ -78,15 +75,15 @@ public class Warehouse {
      * @param id for the product to be removed
      */
     public void remove(UUID id) {
-        List<Product> products = getProductList();
-        Category tempCat;
-        for (Product product : products) {
+        Category tempCat = null;
+        boolean found = false;
+        for (Product product : getProducts()) {
             if (product.uuid().equals(id)) {
                 tempCat = product.category();
-            } else {
-                System.out.println("product not found with UUID: " + id);
-                return;
+                found = true;
             }
+        }
+        if (found) {
             List<Product> categoryList = categoryMap.get(tempCat);
             if (categoryList.size() == 1) {
                 categoryMap.remove(tempCat);
@@ -97,33 +94,24 @@ public class Warehouse {
                     .ifPresent(categoryList::remove);
 
             categoryMap.replace(tempCat, categoryList);
-        }
+        }else System.out.println("product not found with UUID: " + id);
     }
 
     /**
      * Get all product from the warehouse.
      *
-     * @return an immutable list.
+     * @return Unmodifiable list.
      */
     public List<Product> getProducts() {
         if (categoryMap.isEmpty()) {
             return List.of();
         }
-        var list = getProductList();
+        List<Product> list = new ArrayList<>();
+        categoryMap.values()
+                .forEach(list::addAll);
         return List.copyOf(list);
     }
 
-    /**
-     * Get all product from the warehouse.
-     *
-     * @return a mutable list.
-     */
-    public List<Product> getProductList() {
-        List<Product> products = new ArrayList<>();
-        categoryMap.values()
-                .forEach(products::addAll);
-        return products;
-    }
 
     /**
      * Clears the warehouse of all products in all lists.
@@ -140,7 +128,7 @@ public class Warehouse {
      * @return Optional of product if found or an empty Optional.
      */
     public Optional<Product> getProductById(UUID id) {
-        List<Product> products = getProductList();
+        List<Product> products = getProducts();
         Iterator<Product> iterator = products.iterator();
         if (!products.isEmpty()) {
             while (iterator.hasNext()) {
@@ -161,7 +149,7 @@ public class Warehouse {
         if (tempPrice < 0) {
             throw new IllegalArgumentException("price cant be negative.");
         }
-        Product updateProduct = getProductList().stream()
+        Product updateProduct = getProducts().stream()
                 .filter(p -> p.uuid()
                         .equals(id))
                 .findFirst()
@@ -186,7 +174,7 @@ public class Warehouse {
 
     public List<Perishable> expiredProducts() {
         List<Perishable> perishables = new ArrayList<>();
-        for (Product product : getProductList()) {
+        for (Product product : getProducts()) {
             if (product instanceof Perishable && ((Perishable) product).isExpired()) {
                 perishables.add((Perishable) product);
             }
@@ -196,7 +184,7 @@ public class Warehouse {
 
     public List<Shippable> shippableProducts() {
         List<Shippable> shipList = new ArrayList<>();
-        for (Product product : getProductList()) {
+        for (Product product : getProducts()) {
             shipList.add((Shippable) product);
         }
         return shipList;

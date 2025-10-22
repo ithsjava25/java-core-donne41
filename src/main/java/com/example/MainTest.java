@@ -19,17 +19,21 @@ public class MainTest {
                 LocalDate.now().plusDays(1),
                 new BigDecimal(2));
 
-        FoodProduct Milk2 = new FoodProduct(UUID.randomUUID(), "Milk",
-                Category.of("diary"), new BigDecimal("20"),
-                LocalDate.now().minusDays(2),
-                new BigDecimal(2));
-        FoodProduct Milk3 = new FoodProduct(UUID.randomUUID(), "Milk",
-                Category.of("diary"), new BigDecimal("30"),
-                LocalDate.now().plusDays(5),
-                new BigDecimal(2));
-        ElectronicsProduct laptop = new ElectronicsProduct(UUID.randomUUID(), "laptop",
-                Category.of("electronics"),new BigDecimal (4000), 24,
-                new BigDecimal (5));
+//        FoodProduct Milk2 = new FoodProduct(UUID.randomUUID(), "Milk",
+//                Category.of("diary"), new BigDecimal("20"),
+//                LocalDate.now().minusDays(2),
+//                new BigDecimal(2));
+//        FoodProduct Milk3 = new FoodProduct(UUID.randomUUID(), "Milk",
+//                Category.of("diary"), new BigDecimal("24"),
+//                LocalDate.now().plusDays(5),
+//                new BigDecimal(2));
+//        FoodProduct Milk4 = new FoodProduct(UUID.randomUUID(), "Milk",
+//                Category.of("diary"), new BigDecimal("24"),
+//                LocalDate.now().plusDays(5),
+//                new BigDecimal(2));
+//        ElectronicsProduct laptop = new ElectronicsProduct(UUID.randomUUID(), "laptop",
+//                Category.of("electronics"),new BigDecimal (4000), 24,
+//                new BigDecimal (5));
         Warehouse warehouse = Warehouse.getInstance("New Warehouse");
         IntStream.rangeClosed(1, 10).forEach(i ->
                 warehouse.addProduct(new FoodProduct(UUID.randomUUID(), "Normal" + i, Category.of("Test"),
@@ -40,17 +44,12 @@ public class MainTest {
         Product outlierLow = new FoodProduct(UUID.randomUUID(), "Cheap", Category.of("Test"),
                 new BigDecimal("0.01"), LocalDate.now().plusDays(5), BigDecimal.ONE);
 
-
+        warehouse.addProduct(outlierHigh);
+        warehouse.addProduct(outlierLow);
         warehouse.addProduct(Milk1);
-        warehouse.addProduct(Milk2);
-        warehouse.addProduct(laptop);
-        warehouse.remove(Milk1.uuid());
-        List<Product> test = warehouse.getProducts();
-        System.out.println(test.size());
-        System.out.println(Milk2);
-        warehouse.addProduct(Milk3);
-        warehouse.updateProductPrice(laptop.uuid(),new BigDecimal (9500));
-        warehouse.updateProductPrice(laptop.uuid(),new BigDecimal (8000));
+//        warehouse.addProduct(Milk2);
+//        warehouse.addProduct(Milk3);
+//        warehouse.addProduct(Milk4);
         System.out.println("changed: " + warehouse.getChangedProducts().size());
         System.out.println(warehouse.isEmpty());
         System.out.println(warehouse.shippableProducts().stream()
@@ -63,6 +62,7 @@ public class MainTest {
         System.out.println(list.size());
         var outList = warehouse.findOutliners();
         System.out.println(outList.size());
+        System.out.println(outList);
 
     }
 

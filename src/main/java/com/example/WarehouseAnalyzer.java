@@ -135,35 +135,6 @@ class WarehouseAnalyzer {
         }
         return result;
     }
-        //TODO Fix comments about what it does.
-        //  And fix comments and shit in EdgeCaseTest!
-//    /**
-//     * Identifies products whose price deviates from the mean by more than the specified
-//     * number of standard deviations. Uses population standard deviation over all products.
-//     * Test expectation: with a mostly tight cluster and two extremes, calling with 2.0 returns the two extremes.
-//     *
-//     * @param standardDeviations threshold in standard deviations (e.g., 2.0)
-//     * @return list of products considered outliers
-//     */
-//    public List<Product> findPriceOutliers(double standardDeviations) {
-//        List<Product> products = warehouse.getProducts();
-//        int n = products.size();
-//        if (n == 0) return List.of();
-//        double sum = products.stream().map(Product::price).mapToDouble(bd -> bd.doubleValue()).sum();
-//        double mean = sum / n;
-//        double variance = products.stream()
-//                .map(Product::price)
-//                .mapToDouble(bd -> Math.pow(bd.doubleValue() - mean, 2))
-//                .sum() / n;
-//        double std = Math.sqrt(variance);
-//        double threshold = standardDeviations * std;
-//        List<Product> outliers = new ArrayList<>();
-//        for (Product p : products) {
-//            double diff = Math.abs(p.price().doubleValue() - mean);
-//            if (diff > threshold) outliers.add(p);
-//        }
-//        return outliers;
-//    }
 
     /**
      * Identifies outliners by implementing the IQR method.
@@ -172,10 +143,10 @@ class WarehouseAnalyzer {
      * @return List of products that is considered outliners
      */
     public List<Product>findPriceOutliers(){
-        var productList = warehouse.getProductList();
+        var productList = warehouse.getProducts();
         List<Product> outliners = new ArrayList<>();
-        int medianIndex = (int) (productList.size() / 2.0 + 0.5);
-        int lowerQIndex = (int) (medianIndex / 2.0 + 0.5);
+        int medianIndex = (int) ((productList.size()-1) / 2.0 + 0.5);
+        int lowerQIndex = (int) ((productList.size()-1) / 4.0 + 0.5);
         int upperQIndex = medianIndex + lowerQIndex;
         var sortedList = productList.stream().sorted(Comparator.comparing(Product::price)).toList();
         BigDecimal lowerPrice = sortedList.get(lowerQIndex).price();
