@@ -7,7 +7,6 @@ public abstract class Product {
     private UUID id;
     private String name;
     private Category category;
-    private BigDecimal price;
 
 
     public UUID uuid() {
@@ -18,7 +17,7 @@ public abstract class Product {
         this.id = id;
     }
 
-    public String name(){
+    public String name() {
         return this.name;
     }
 
@@ -35,8 +34,9 @@ public abstract class Product {
         return this.category;
     }
 
-    public abstract BigDecimal price();
     public abstract double weight();
+
+    public abstract BigDecimal price();
 
     public abstract void setPrice(BigDecimal price);
 

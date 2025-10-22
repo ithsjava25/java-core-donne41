@@ -12,7 +12,6 @@ public class FoodProduct extends Product
     BigDecimal weight;
 
 
-
     public FoodProduct(UUID id, String productName, Category categoryName, BigDecimal price, LocalDate expirationDate, BigDecimal weight) {
         this.setId(id);
         this.setName(productName);
@@ -30,26 +29,28 @@ public class FoodProduct extends Product
             throw new IllegalArgumentException("Price cannot be negative.");
         }
     }
-    public void weight(BigDecimal weight) {
-        if(weight.doubleValue() < 0.0) {
-            throw new IllegalArgumentException("Weight cannot be negative.");
-        }
-        this.weight = weight;
-    }
-    public double weight() {
-        return this.weight.doubleValue();
-    }
-
-
 
     public BigDecimal price() {
         return price;
     }
 
+
+    public void weight(BigDecimal weight) {
+        if (weight.doubleValue() < 0.0) {
+            throw new IllegalArgumentException("Weight cannot be negative.");
+        }
+        this.weight = weight;
+    }
+
+    public double weight() {
+        return this.weight.doubleValue();
+    }
+
     public LocalDate expirationDate() {
         return this.expirationDate;
     }
-    public void expirationDate(LocalDate date){
+
+    public void expirationDate(LocalDate date) {
         this.expirationDate = date;
     }
 
@@ -57,7 +58,7 @@ public class FoodProduct extends Product
     @Override
     public String toString() {
         return "FoodProduct {" +
-                " name= "+ this.name() +
+                " name= " + this.name() +
                 " expirationDate= " + expirationDate +
                 ", price= " + price +
                 ", weight= " + weight +
@@ -70,9 +71,8 @@ public class FoodProduct extends Product
         String name = this.name();
         LocalDate expi = this.expirationDate();
         return String.format("""
-                Food: %s, Expires: %s""", name,expi);
+                Food: %s, Expires: %s""", name, expi);
     }
-
 
 
     @Override
